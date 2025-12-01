@@ -10,7 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { StatusBadge } from "@/components/StatusBadge"
 import { DownloadButton } from "@/components/DownloadButton"
 import type { Job } from "@/types/job"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow, format } from "date-fns"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface JobsTableProps {
     jobs: Job[]
@@ -77,7 +82,16 @@ export function JobsTable({ jobs, isLoading }: JobsTableProps) {
                                 <StatusBadge status={job.status} />
                             </TableCell>
                             <TableCell className="text-muted-foreground">
-                                {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="cursor-help">
+                                            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {format(new Date(job.created_at), "PPpp")}
+                                    </TooltipContent>
+                                </Tooltip>
                             </TableCell>
                             <TableCell className="text-right">
                                 <DownloadButton

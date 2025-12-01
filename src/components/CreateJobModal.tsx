@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useCreateJob } from "@/hooks/useCreateJob"
 import { uploadPDF, getPDFUrl } from "@/lib/supabase"
+import { estimateProcessingTime } from "@/utils/estimateProcessingTime"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -137,8 +138,13 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
                     </div>
 
                     {file && !error && (
-                        <div className="text-sm text-muted-foreground">
-                            Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                                Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                                Estimated time: {estimateProcessingTime(file.size)}
+                            </div>
                         </div>
                     )}
 
