@@ -1,9 +1,5 @@
 import type { Job, JobsResponse, CreateJobPayload } from '@/types/job'
-
-/**
- * Base API URL from environment variables
- */
-const API_URL = import.meta.env.VITE_API_URL as string
+import config from '@/config'
 
 /**
  * Generic fetch wrapper with error handling
@@ -12,12 +8,12 @@ const API_URL = import.meta.env.VITE_API_URL as string
  * Generic fetch wrapper with error handling
  */
 async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const { timeout = 15000, ...fetchOptions } = options as RequestInit & { timeout?: number }
+    const { timeout = config.api.timeout, ...fetchOptions } = options as RequestInit & { timeout?: number }
 
     const controller = new AbortController()
     const id = setTimeout(() => controller.abort(), timeout)
 
-    const config: RequestInit = {
+    const requestConfig: RequestInit = {
         headers: {
             'Content-Type': 'application/json',
             ...fetchOptions.headers,
@@ -27,7 +23,7 @@ async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Prom
     }
 
     try {
-        const response = await fetch(`${API_URL}${endpoint}`, config)
+        const response = await fetch(`${config.api.baseUrl}${endpoint}`, requestConfig)
         clearTimeout(id)
 
         if (!response.ok) {

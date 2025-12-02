@@ -4,6 +4,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { JobsPage } from './JobsPage'
 import * as api from '@/lib/api'
 import type { JobsResponse } from '@/types/job'
+import { TooltipProvider } from '@/components/ui/tooltip'
+
+// Mock Config
+vi.mock('@/config', () => ({
+    default: {
+        api: { baseUrl: 'http://localhost:3000', timeout: 1000 },
+        supabase: { url: 'https://example.supabase.co', anonKey: 'test-key' }
+    }
+}))
 
 // Mock API and Supabase
 vi.mock('@/lib/api')
@@ -37,7 +46,9 @@ describe('JobsPage Integration', () => {
     const renderPage = () => {
         return render(
             <QueryClientProvider client={queryClient}>
-                <JobsPage />
+                <TooltipProvider>
+                    <JobsPage />
+                </TooltipProvider>
             </QueryClientProvider>
         )
     }
