@@ -1,9 +1,7 @@
 import type { Job, JobsResponse, CreateJobPayload } from '@/types/job'
 import config from '@/config'
+import { useServerStore } from '@/stores/useServerStore'
 
-/**
- * Generic fetch wrapper with error handling
- */
 /**
  * Generic fetch wrapper with error handling
  */
@@ -27,6 +25,11 @@ async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Prom
         clearTimeout(id)
 
         if (!response.ok) {
+            // Handle 50x errors (Server likely asleep or down)
+            if (response.status >= 500) {
+                useServerStore.getState().setStatus('offline')
+            }
+
             const errorData = await response.json().catch(() => ({}))
             throw new Error(errorData.message || `API Error: ${response.statusText}`)
         }
@@ -78,4 +81,13 @@ export async function deleteJob(jobId: string): Promise<void> {
     return fetchClient<void>(`/jobs/${jobId}`, {
         method: 'DELETE',
     })
+}
+
+/**
+ * Check server health
+ */
+export async function checkHealth(): Promise<{ status: string }> {
+    return fetchClient<{ status: string }>('/health', {
+        timeout: 5000, // Short timeout for health checks
+    } as RequestInit & { timeout: number })
 }

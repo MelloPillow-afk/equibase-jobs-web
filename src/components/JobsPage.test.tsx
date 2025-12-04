@@ -14,6 +14,18 @@ vi.mock('@/config', () => ({
     }
 }))
 
+// Mock Server Store
+vi.mock('@/stores/useServerStore', () => ({
+    useServerStore: vi.fn((selector) => selector({
+        status: 'online',
+        setStatus: vi.fn(),
+        lastApiCall: Date.now(),
+        isIdle: false,
+        setIdle: vi.fn(),
+        updateLastApiCall: vi.fn(),
+    })),
+}))
+
 // Mock API and Supabase
 vi.mock('@/lib/api')
 vi.mock('@/lib/supabase', () => ({

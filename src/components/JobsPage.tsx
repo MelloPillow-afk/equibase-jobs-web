@@ -3,6 +3,7 @@ import { useJobs } from "@/hooks/useJobs"
 import { useJobPolling } from "@/hooks/useJobPolling"
 import { JobsTable } from "@/components/JobsTable"
 import { Pagination } from "@/components/Pagination"
+import { ServerStatusBadge } from "@/components/ServerStatusBadge"
 import { CreateJobModal } from "@/components/CreateJobModal"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -45,19 +46,23 @@ export function JobsPage() {
 
     return (
         <div className="container mx-auto py-10 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
                 <div>
+                    <ServerStatusBadge className="mb-5" />
                     <h1 className="text-3xl font-bold tracking-tight">PDF Processing Jobs</h1>
                     <p className="text-muted-foreground mt-2">
                         Upload PDFs to extract data and convert them to CSV format.
                     </p>
                 </div>
-                <CreateJobModal>
-                    <Button size="lg">
-                        <Plus className="mr-2 h-4 w-4" />
-                        New Job
-                    </Button>
-                </CreateJobModal>
+                <div className="self-end">
+                    <CreateJobModal>
+                        <Button size="lg">
+                            <Plus className="h-4 w-4" />
+                            New Job
+                        </Button>
+                    </CreateJobModal>
+                </div>
+
             </div>
 
             <JobsTable

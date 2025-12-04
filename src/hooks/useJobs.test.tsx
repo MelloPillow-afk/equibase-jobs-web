@@ -8,6 +8,18 @@ import type { JobsResponse } from '@/types/job'
 // Mock the API module
 vi.mock('@/lib/api')
 
+// Mock Server Store
+vi.mock('@/stores/useServerStore', () => ({
+    useServerStore: vi.fn((selector) => selector({
+        status: 'online',
+        setStatus: vi.fn(),
+        lastApiCall: Date.now(),
+        isIdle: false,
+        setIdle: vi.fn(),
+        updateLastApiCall: vi.fn(),
+    })),
+}))
+
 describe('useJobs', () => {
     let queryClient: QueryClient
 

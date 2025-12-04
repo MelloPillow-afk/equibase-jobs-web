@@ -3,6 +3,8 @@ import config from '@/config'
 
 export const supabase = createClient(config.supabase.url, config.supabase.anonKey)
 
+const storageBucket = 'horse-racing-files'
+
 /**
  * Upload a PDF file to Supabase Storage
  */
@@ -12,7 +14,7 @@ export async function uploadPDF(file: File): Promise<{ path: string | null; erro
     const filePath = `uploads/${fileName}`;
 
     const { error } = await supabase.storage
-        .from('pdfs')
+        .from(storageBucket)
         .upload(filePath, file);
 
     if (error) {
@@ -24,23 +26,17 @@ export async function uploadPDF(file: File): Promise<{ path: string | null; erro
 }
 
 /**
- * Get the public download URL for a CSV file
- */
-export function getCSVDownloadUrl(path: string): string {
-    const { data } = supabase.storage
-        .from('csvs')
-        .getPublicUrl(path);
-
-    return data.publicUrl;
-}
-
-/**
  * Get the public URL for a PDF file
  */
-export function getPDFUrl(path: string): string {
-    const { data } = supabase.storage
-        .from('pdfs')
-        .getPublicUrl(path);
+export async function getPDFUrl(path: string): Promise<string | null> {
+    const { data } = await supabase.storage
+        .from(storageBucket)
+        .createSignedUrl(path, 3600);
 
-    return data.publicUrl;
+    if (!data) {
+        console.error('Failed to generate signed URL');
+        throw new Error('Failed to generate signed URL');
+    }
+
+    return data.signedUrl;
 }

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useCreateJob } from "@/hooks/useCreateJob"
 import { uploadPDF, getPDFUrl } from "@/lib/supabase"
+import { formatFileSize } from "@/lib/utils"
 import { estimateProcessingTime } from "@/utils/estimateProcessingTime"
 import { Button } from "@/components/ui/button"
 import {
@@ -39,8 +40,8 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
                 setFile(null)
                 return
             }
-            if (selectedFile.size > 4 * 1024 * 1024) { // 4MB
-                setUploadError("File size must be less than 4MB.")
+            if (selectedFile.size > 10 * 1024 * 1024) { // 10MB
+                setUploadError("File size must be less than 10MB.")
                 setFile(null)
                 return
             }
@@ -64,7 +65,11 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
             }
 
             // 2. Get public URL
-            const pdfUrl = getPDFUrl(path)
+            const pdfUrl = await getPDFUrl(path)
+
+            if (!pdfUrl) {
+                throw new Error("Failed to generate signed URL")
+            }
 
             // 3. Create Job
             createJob(
@@ -113,7 +118,7 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
                 <DialogHeader>
                     <DialogTitle>Upload PDF</DialogTitle>
                     <DialogDescription>
-                        Upload a PDF file to start processing. Max file size is 4MB.
+                        Upload a PDF file to start processing. Max file size is 10MB.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -140,7 +145,7 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
                     {file && !error && (
                         <div className="space-y-1">
                             <div className="text-sm text-muted-foreground">
-                                Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                Selected: {file.name} ({formatFileSize(file.size)})
                             </div>
                             <div className="text-sm text-muted-foreground">
                                 Estimated time: {estimateProcessingTime(file.size)}

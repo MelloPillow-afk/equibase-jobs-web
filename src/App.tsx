@@ -1,12 +1,51 @@
 import { JobsPage } from "@/components/JobsPage"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { WakeUpModal } from "@/components/WakeUpModal"
+import { useServerStore } from "@/stores/useServerStore"
+import { checkHealth } from "@/lib/api"
+import { useEffect } from "react"
 
 function App() {
+  const { setStatus, setIdle, lastApiCall, isIdle } = useServerStore()
+
+  // Initial Health Check
+  useEffect(() => {
+    const initHealth = async () => {
+      setStatus('starting')
+      try {
+        await checkHealth()
+        setStatus('online')
+      } catch (e) {
+        console.error("Initial health check failed", e)
+        setStatus('offline')
+      }
+    }
+    initHealth()
+  }, [setStatus])
+
+  // Idle Timer Logic (15 minutes)
+  useEffect(() => {
+    if (isIdle) return
+
+    const checkIdle = () => {
+      const now = Date.now()
+      const timeSinceLastCall = now - lastApiCall
+      // 15 minutes = 15 * 60 * 1000 = 900000 ms
+      if (timeSinceLastCall > 900000) {
+        setIdle(true)
+      }
+    }
+
+    const interval = setInterval(checkIdle, 60000) // Check every minute
+    return () => clearInterval(interval)
+  }, [lastApiCall, isIdle, setIdle])
+
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
       <TooltipProvider>
         <JobsPage />
       </TooltipProvider>
+      <WakeUpModal />
     </div>
   )
 }
