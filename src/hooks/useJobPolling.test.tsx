@@ -57,7 +57,7 @@ describe('useJobPolling', () => {
                 title: 'Completed Job',
                 status: 'completed',
                 pdf_url: 'https://example.com/test.pdf',
-                download_url: 'https://example.com/test.csv',
+                file_download_url: 'https://example.com/test.csv',
                 created_at: '2025-01-01T00:00:00Z',
                 completed_at: '2025-01-01T00:05:00Z',
             },

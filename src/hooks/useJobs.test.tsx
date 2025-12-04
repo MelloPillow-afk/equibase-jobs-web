@@ -46,7 +46,7 @@ describe('useJobs', () => {
                     title: 'Test Job',
                     status: 'completed',
                     pdf_url: 'https://example.com/test.pdf',
-                    download_url: 'https://example.com/test.csv',
+                    file_download_url: 'https://example.com/test.csv',
                     created_at: '2025-01-01T00:00:00Z',
                 },
             ],

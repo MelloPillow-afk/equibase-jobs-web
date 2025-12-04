@@ -79,7 +79,7 @@ Response Example:
     "title": "Process Q4 Financial Report",
     "status": "completed",
     "pdf_url": "https://supabase.co/storage/uploads/financial-report-q4.pdf",
-    "download_url": "https://supabase.co/storage/outputs/financial-report-q4.csv",
+    "file_download_url": "https://supabase.co/storage/outputs/financial-report-q4.csv",
     "created_at": "2025-01-15T10:30:00Z",
     "completed_at": "2025-01-15T10:40:00Z",
 }
@@ -102,7 +102,7 @@ Response Example:
             "title": "Process Q4 Financial Report",
             "status": "completed",
             "pdf_url": "https://supabase.co/storage/uploads/report.pdf",
-            "download_url": "https://supabase.co/storage/outputs/report.csv",
+            "file_download_url": "https://supabase.co/storage/outputs/report.csv",
             "created_at": "2025-01-15T10:30:00Z",
             "completed_at": "2025-01-15T10:40:00Z",
         }
@@ -127,7 +127,7 @@ Response Example:
     "title": "Process Q4 Financial Report",
     "status": "completed",
     "pdf_url": "https://supabase.co/storage/uploads/financial-report-q4.pdf",
-    "download_url": "https://supabase.co/storage/outputs/financial-report-q4.csv",
+    "file_download_url": "https://supabase.co/storage/outputs/financial-report-q4.csv",
     "created_at": "2025-01-15T10:30:00Z",
     "completed_at": "2025-01-15T10:40:00Z",
 }

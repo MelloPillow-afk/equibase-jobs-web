@@ -21,7 +21,7 @@ export function ServerStatusBadge({ className }: { className?: string }) {
     const labels = {
         online: "Server Online",
         starting: "Waking Up...",
-        offline: "Server Asleep",
+        offline: "Server Offline",
     }
 
     const Icon = icons[status]

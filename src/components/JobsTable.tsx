@@ -96,7 +96,7 @@ export function JobsTable({ jobs, isLoading }: JobsTableProps) {
                             <TableCell className="text-right">
                                 <DownloadButton
                                     status={job.status}
-                                    downloadUrl={job.download_url}
+                                    downloadUrl={job.file_download_url}
                                     fileName={`${job.title}.csv`}
                                 />
                             </TableCell>

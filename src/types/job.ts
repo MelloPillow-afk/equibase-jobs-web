@@ -11,7 +11,7 @@ export interface Job {
     title: string
     status: JobStatus
     pdf_url: string
-    download_url?: string
+    file_download_url?: string
     created_at: string
     completed_at?: string
     error_message?: string
