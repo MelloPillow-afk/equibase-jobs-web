@@ -106,52 +106,54 @@ export function JobsTable({ jobs, isLoading }: JobsTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {jobs.map((job) => (
-                            <TableRow key={job.id}>
-                                <TableCell className="font-medium">{job.title}</TableCell>
-                                <TableCell>
-                                    <StatusBadge status={job.status} />
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <span className="cursor-help">
-                                                {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
-                                            </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            {format(new Date(job.created_at), "PPpp")}
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <DownloadButton
-                                            status={job.status}
-                                            downloadUrl={job.file_download_url}
-                                            fileName={`${job.title}.csv`}
-                                        />
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Open menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive"
-                                                    onClick={() => setJobToDelete(job)}
-                                                >
-                                                    <Trash className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {[...jobs]
+                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                            .map((job) => (
+                                <TableRow key={job.id}>
+                                    <TableCell className="font-medium">{job.title}</TableCell>
+                                    <TableCell>
+                                        <StatusBadge status={job.status} />
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="cursor-help">
+                                                    {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                {format(new Date(job.created_at), "PPpp")}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <DownloadButton
+                                                status={job.status}
+                                                downloadUrl={job.file_download_url}
+                                                fileName={`${job.title}.csv`}
+                                            />
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Open menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive"
+                                                        onClick={() => setJobToDelete(job)}
+                                                    >
+                                                        <Trash className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                     </TableBody>
                 </Table>
             </div>

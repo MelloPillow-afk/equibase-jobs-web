@@ -29,6 +29,13 @@ vi.mock('@/stores/useServerStore', () => ({
 // Mock API and Supabase
 vi.mock('@/lib/api')
 vi.mock('@/lib/supabase', () => ({
+    supabase: {
+        channel: vi.fn(() => ({
+            on: vi.fn(),
+            subscribe: vi.fn(),
+        })),
+        removeChannel: vi.fn(),
+    },
     uploadPDF: vi.fn(),
     getPDFUrl: vi.fn(),
     getCSVDownloadUrl: vi.fn(),

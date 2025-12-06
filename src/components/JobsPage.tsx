@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useJobs } from "@/hooks/useJobs"
-import { useJobPolling } from "@/hooks/useJobPolling"
+import { useJobSubscription } from "@/hooks/useJobSubscription"
 import { JobsTable } from "@/components/JobsTable"
 import { Pagination } from "@/components/Pagination"
 import { ServerStatusBadge } from "@/components/ServerStatusBadge"
@@ -16,8 +16,8 @@ export function JobsPage() {
 
     const { data, isLoading, isError, error } = useJobs(page, limit)
 
-    // Poll for updates on any processing jobs
-    useJobPolling(data?.data || [])
+    // Subscribe to updates for processing jobs
+    useJobSubscription(data?.data || [])
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage)
