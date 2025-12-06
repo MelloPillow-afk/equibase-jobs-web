@@ -13,9 +13,10 @@ interface DownloadButtonProps {
     status: JobStatus
     downloadUrl?: string
     fileName?: string
+    className?: string
 }
 
-export function DownloadButton({ status, downloadUrl, fileName }: DownloadButtonProps) {
+export function DownloadButton({ status, downloadUrl, fileName, className }: DownloadButtonProps) {
     const [isLoading, setIsLoading] = useState(false)
 
     const handleDownload = async () => {
@@ -54,10 +55,10 @@ export function DownloadButton({ status, downloadUrl, fileName }: DownloadButton
                 <TooltipTrigger asChild>
                     <Button
                         variant="outline"
-                        size="icon-lg"
+                        size="icon"
                         disabled={isDisabled}
                         onClick={handleDownload}
-                        className="h-8 w-8"
+                        className={className}
                     >
                         {isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />

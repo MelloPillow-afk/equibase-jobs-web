@@ -21,13 +21,8 @@ vi.mock("@/components/StatusBadge", () => ({
     StatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }))
 
-// Mock DropdownMenu
-vi.mock("@/components/ui/dropdown-menu", () => ({
-    DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode, onClick: () => void }) => <button onClick={onClick}>{children}</button>,
-}))
+// Mock DropdownMenu - NO LONGER USED in component but if other tests need it keep it? No, specific to this file.
+// Removing unused mocks.
 
 // Mock AlertDialog
 vi.mock("@/components/ui/alert-dialog", () => ({
@@ -39,14 +34,6 @@ vi.mock("@/components/ui/alert-dialog", () => ({
     AlertDialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
     AlertDialogCancel: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
     AlertDialogAction: ({ children, onClick }: { children: React.ReactNode, onClick: () => void }) => <button onClick={onClick}>{children}</button>,
-}))
-
-// Mock Tooltip
-vi.mock("@/components/ui/tooltip", () => ({
-    Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    TooltipTrigger: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
-    TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    TooltipProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
 describe("JobsTable", () => {
@@ -67,34 +54,38 @@ describe("JobsTable", () => {
 
     it("renders jobs correctly", () => {
         render(<JobsTable jobs={mockJobs} isLoading={false} />)
-        expect(screen.getByText("Test Job 1")).toBeInTheDocument()
-        expect(screen.getByText("completed")).toBeInTheDocument()
+        // With responsive design, items might be rendered twice (mobile + desktop)
+        const titles = screen.getAllByText("Test Job 1")
+        expect(titles.length).toBeGreaterThan(0)
+
+        const statuses = screen.getAllByText("completed")
+        expect(statuses.length).toBeGreaterThan(0)
     })
 
     it("opens delete confirmation dialog", async () => {
         render(<JobsTable jobs={mockJobs} isLoading={false} />)
 
-        // With mocked DropdownMenu, the content is always visible.
-        // We can click "Delete" directly.
-        const deleteOption = screen.getByText("Delete")
-        fireEvent.click(deleteOption)
+        // Find delete buttons. Both mobile and desktop view have one.
+        // They are "Delete" text in sr-only spans.
+        const deleteButtons = screen.getAllByText("Delete")
+        // Click the first one (doesn't matter which one triggers the state change)
+        fireEvent.click(deleteButtons[0])
 
         // Check if dialog appears
-        expect(screen.getByText("Are you sure?")).toBeInTheDocument()
+        expect(screen.getByText("Delete Job")).toBeInTheDocument()
         expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument()
     })
 
     it("calls deleteJob when confirmed", async () => {
         render(<JobsTable jobs={mockJobs} isLoading={false} />)
 
-        // Click delete option
-        const deleteOption = screen.getByText("Delete")
-        fireEvent.click(deleteOption)
+        // Click delete button
+        const deleteButtons = screen.getAllByText("Delete")
+        fireEvent.click(deleteButtons[0])
 
         // Click confirm delete in dialog
-        // The dialog button usually has specific class or we can find by role within dialog.
         const dialog = screen.getByRole("alertdialog")
-        const confirmBtn = within(dialog).getByText("Delete")
+        const confirmBtn = within(dialog).getAllByText("Delete")[0] // The action button also says "Delete"
 
         fireEvent.click(confirmBtn)
 

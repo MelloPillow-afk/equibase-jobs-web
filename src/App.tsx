@@ -1,26 +1,45 @@
 import { JobsPage } from "@/components/JobsPage"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { WakeUpModal } from "@/components/WakeUpModal"
 import { useServerStore } from "@/stores/useServerStore"
 import { checkHealth } from "@/lib/api"
 import { useEffect } from "react"
+import { Toaster } from "@/components/ui/sonner"
 
 function App() {
   const { setStatus, setIdle, lastApiCall, isIdle } = useServerStore()
 
-  // Initial Health Check
+  // Initial Health Check & Polling
   useEffect(() => {
-    const initHealth = async () => {
+    let pollingInterval: ReturnType<typeof setInterval>
+
+    const startPolling = async () => {
       setStatus('starting')
       try {
         await checkHealth()
         setStatus('online')
       } catch (e) {
-        console.error("Initial health check failed", e)
+        console.error("Initial health check failed, starting polling...", e)
         setStatus('offline')
+
+        // Start polling if initial check fails
+        pollingInterval = setInterval(async () => {
+          try {
+            await checkHealth()
+            setStatus('online')
+            clearInterval(pollingInterval)
+          } catch (e) {
+            // Keep polling
+            console.log("Server still waking up...")
+          }
+        }, 2000)
       }
     }
-    initHealth()
+
+    startPolling()
+
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval)
+    }
   }, [setStatus])
 
   // Idle Timer Logic (15 minutes)
@@ -45,7 +64,7 @@ function App() {
       <TooltipProvider>
         <JobsPage />
       </TooltipProvider>
-      <WakeUpModal />
+      <Toaster />
     </div>
   )
 }

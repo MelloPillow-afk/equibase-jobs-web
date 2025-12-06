@@ -8,12 +8,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -28,13 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { StatusBadge } from "@/components/StatusBadge"
 import { DownloadButton } from "@/components/DownloadButton"
 import type { Job } from "@/types/job"
-import { formatDistanceToNow, format } from "date-fns"
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { MoreHorizontal, Trash } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
+import { Trash } from "lucide-react"
 import { useDeleteJob } from "@/hooks/useDeleteJob"
 
 interface JobsTableProps {
@@ -55,27 +44,38 @@ export function JobsTable({ jobs, isLoading }: JobsTableProps) {
 
     if (isLoading) {
         return (
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Created</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                                <TableCell className="text-right"><Skeleton className="h-8 w-[100px] ml-auto" /></TableCell>
+            <div className="space-y-4">
+                <div className="md:hidden space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="rounded-xl border p-6 space-y-4">
+                            <Skeleton className="h-6 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    ))}
+                </div>
+                <div className="hidden md:block rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i} className="h-16">
+                                    <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
+                                    <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                                    <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                                    <TableCell className="text-right"><Skeleton className="h-8 w-[100px] ml-auto" /></TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         )
     }
@@ -93,67 +93,87 @@ export function JobsTable({ jobs, isLoading }: JobsTableProps) {
         )
     }
 
+    const sortedJobs = [...jobs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
     return (
         <>
-            <div className="rounded-md border">
+            {/* Mobile/Tablet Card View */}
+            <div className="md:hidden space-y-4">
+                {sortedJobs.map((job) => (
+                    <div key={job.id} className="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-4">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <h3 className="font-semibold text-lg leading-none tracking-tight">{job.title}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                                </p>
+                            </div>
+                            <StatusBadge status={job.status} />
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-2">
+                            <DownloadButton
+                                status={job.status}
+                                downloadUrl={job.file_download_url}
+                                fileName={`${job.title}.csv`}
+                                className="flex-1 h-12 text-base"
+                            />
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-12 w-12 text-destructive border-input hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                                onClick={() => setJobToDelete(job)}
+                            >
+                                <Trash className="h-5 w-5" />
+                                <span className="sr-only">Delete</span>
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Created</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="h-12">
+                            <TableHead className="w-[40%] text-base">Title</TableHead>
+                            <TableHead className="text-base">Status</TableHead>
+                            <TableHead className="text-base">Created</TableHead>
+                            <TableHead className="text-right text-base">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {[...jobs]
-                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                            .map((job) => (
-                                <TableRow key={job.id}>
-                                    <TableCell className="font-medium">{job.title}</TableCell>
-                                    <TableCell>
-                                        <StatusBadge status={job.status} />
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <span className="cursor-help">
-                                                    {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
-                                                </span>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                {format(new Date(job.created_at), "PPpp")}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <DownloadButton
-                                                status={job.status}
-                                                downloadUrl={job.file_download_url}
-                                                fileName={`${job.title}.csv`}
-                                            />
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                        className="text-destructive focus:text-destructive"
-                                                        onClick={() => setJobToDelete(job)}
-                                                    >
-                                                        <Trash className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                        {sortedJobs.map((job) => (
+                            <TableRow key={job.id} className="h-20 hover:bg-muted/50">
+                                <TableCell className="font-medium text-base">{job.title}</TableCell>
+                                <TableCell>
+                                    <StatusBadge status={job.status} />
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-base">
+                                    {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-3">
+                                        <DownloadButton
+                                            status={job.status}
+                                            downloadUrl={job.file_download_url}
+                                            fileName={`${job.title}.csv`}
+                                            className="h-10 w-10"
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-10 w-10 text-destructive hover:bg-destructive/10 hover:text-destructive border-transparent hover:border-destructive/30"
+                                            onClick={() => setJobToDelete(job)}
+                                        >
+                                            <Trash className="h-5 w-5" />
+                                            <span className="sr-only">Delete</span>
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>
@@ -161,17 +181,17 @@ export function JobsTable({ jobs, isLoading }: JobsTableProps) {
             <AlertDialog open={!!jobToDelete} onOpenChange={(open) => !open && setJobToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete Job</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the job
-                            "{jobToDelete?.title}" and remove the data from our servers.
+                            Are you sure you want to delete <span className="font-medium text-foreground">"{jobToDelete?.title}"</span>?
+                            This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="h-11">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDelete}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-11"
                         >
                             Delete
                         </AlertDialogAction>

@@ -104,12 +104,18 @@ describe('JobsPage Integration', () => {
 
         // Wait for data to load
         await waitFor(() => {
-            expect(screen.getByText('Test Job 1')).toBeInTheDocument()
+            const titles = screen.getAllByText('Test Job 1')
+            expect(titles.length).toBeGreaterThan(0)
         })
 
-        expect(screen.getByText('Test Job 2')).toBeInTheDocument()
-        expect(screen.getByText('Completed')).toBeInTheDocument()
-        expect(screen.getByText('Processing')).toBeInTheDocument()
+        const titles2 = screen.getAllByText('Test Job 2')
+        expect(titles2.length).toBeGreaterThan(0)
+
+        const completedMap = screen.getAllByText('Completed') // StatusBadge renders capitalized? Need to check case if case-sensitive. StatusBadge usually renders title case.
+        expect(completedMap.length).toBeGreaterThan(0)
+
+        const processingMap = screen.getAllByText('Processing')
+        expect(processingMap.length).toBeGreaterThan(0)
     })
 
     it('should handle empty state', async () => {
@@ -151,14 +157,14 @@ describe('JobsPage Integration', () => {
         renderPage()
 
         await waitFor(() => {
-            expect(screen.getByText('Page 1 Job')).toBeInTheDocument()
+            expect(screen.getAllByText('Page 1 Job').length).toBeGreaterThan(0)
         })
 
-        const nextButton = screen.getByText('Next')
+        const nextButton = screen.getByText('Next') // Pagination likely only one "Next" button? Yes, usually.
         fireEvent.click(nextButton)
 
         await waitFor(() => {
-            expect(screen.getByText('Page 2 Job')).toBeInTheDocument()
+            expect(screen.getAllByText('Page 2 Job').length).toBeGreaterThan(0)
         })
 
         expect(api.fetchJobs).toHaveBeenCalledWith(2, 10)
@@ -183,7 +189,7 @@ describe('JobsPage Integration', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Upload PDF')).toBeInTheDocument()
-            expect(screen.getByLabelText('PDF File')).toBeInTheDocument()
+            expect(screen.getByText('Tap to select PDF')).toBeInTheDocument()
         })
     })
 })

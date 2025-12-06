@@ -1,6 +1,7 @@
 import type { Job, JobsResponse, CreateJobPayload } from '@/types/job'
 import config from '@/config'
 import { useServerStore } from '@/stores/useServerStore'
+import { toast } from 'sonner'
 
 /**
  * Generic fetch wrapper with error handling
@@ -21,6 +22,9 @@ async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Prom
     }
 
     try {
+        // Reset idle timer on every request
+        useServerStore.getState().updateLastApiCall()
+
         const response = await fetch(`${config.api.baseUrl}${endpoint}`, requestConfig)
         clearTimeout(id)
 
@@ -28,6 +32,7 @@ async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Prom
             // Handle 50x errors (Server likely asleep or down)
             if (response.status >= 500) {
                 useServerStore.getState().setStatus('offline')
+                toast.error("Server is waking up. Please try again in 30 seconds.")
             }
 
             const errorData = await response.json().catch(() => ({}))
