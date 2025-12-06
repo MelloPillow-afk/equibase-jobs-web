@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useCreateJob } from "@/hooks/useCreateJob"
 import { uploadPDF, getPDFUrl } from "@/lib/supabase"
 import { formatFileSize } from "@/lib/utils"
@@ -14,9 +14,9 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Loader2, Upload, AlertCircle } from "lucide-react"
+import { Loader2, Upload, AlertCircle, FileText, X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CreateJobModalProps {
     children?: React.ReactNode
@@ -27,11 +27,16 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
     const [file, setFile] = useState<File | null>(null)
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const { mutate: createJob, isPending: isCreating, error: createError } = useCreateJob()
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0]
+        handleFileSelection(selectedFile)
+    }
+
+    const handleFileSelection = (selectedFile: File | undefined) => {
         setUploadError(null)
 
         if (selectedFile) {
@@ -47,6 +52,23 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
             }
             setFile(selectedFile)
         }
+    }
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (uploading || isCreating) return
+
+        const droppedFile = e.dataTransfer.files?.[0]
+        if (droppedFile) {
+            handleFileSelection(droppedFile)
+        }
+    }
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -95,15 +117,26 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
         }
     }
 
+    const clearFile = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setFile(null)
+        setUploadError(null)
+        if (inputRef.current) {
+            inputRef.current.value = ""
+        }
+    }
+
     const isLoading = uploading || isCreating
     const error = uploadError || (createError as Error)?.message
 
     return (
         <Dialog open={open} onOpenChange={(val) => {
-            setOpen(val)
-            if (!val) {
-                setUploadError(null)
-                setFile(null)
+            if (!isLoading) {
+                setOpen(val)
+                if (!val) {
+                    setUploadError(null)
+                    setFile(null)
+                }
             }
         }}>
             <DialogTrigger asChild>
@@ -114,15 +147,16 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Upload PDF</DialogTitle>
                     <DialogDescription>
-                        Upload a PDF file to start processing. Max file size is 10MB.
+                        Select a PDF file to process.
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+                <form onSubmit={handleSubmit} className="space-y-6 py-2">
+                    {/* Error Alert */}
                     {error && (
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
@@ -131,30 +165,78 @@ export function CreateJobModal({ children }: CreateJobModalProps) {
                         </Alert>
                     )}
 
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label htmlFor="pdf-upload">PDF File</Label>
-                        <Input
-                            id="pdf-upload"
-                            type="file"
-                            accept=".pdf"
-                            onChange={handleFileChange}
-                            disabled={isLoading}
-                        />
-                    </div>
+                    {/* Hidden Input */}
+                    <Input
+                        ref={inputRef}
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        disabled={isLoading}
+                    />
 
-                    {file && !error && (
-                        <div className="space-y-1">
-                            <div className="text-sm text-muted-foreground">
-                                Selected: {file.name} ({formatFileSize(file.size)})
+                    {/* Upload Zone */}
+                    {!file ? (
+                        <div
+                            onClick={() => inputRef.current?.click()}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            className={cn(
+                                "border-2 border-dashed rounded-xl p-10 cursor-pointer transition-colors",
+                                "hover:bg-muted/50 hover:border-muted-foreground/50",
+                                "flex flex-col items-center justify-center text-center gap-4",
+                                isLoading ? "opacity-50 pointer-events-none" : ""
+                            )}
+                        >
+                            <div className="p-4 rounded-full bg-primary/10 text-primary">
+                                <Upload className="h-8 w-8" />
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                                Estimated time: {estimateProcessingTime(file.size)}
+                            <div className="space-y-1">
+                                <h3 className="font-semibold text-lg tracking-tight">Tap to select PDF</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    or drag and drop here
+                                </p>
+                            </div>
+                            <p className="text-xs text-muted-foreground/75">
+                                PDF up to 10MB
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="relative border rounded-xl p-4 flex items-start gap-4 bg-muted/30">
+                            <div className="p-3 rounded-lg bg-background border shadow-sm">
+                                <FileText className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0 grid gap-1">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium truncate pr-2">
+                                        {file.name}
+                                    </p>
+                                    {!isLoading && (
+                                        <button
+                                            type="button"
+                                            onClick={clearFile}
+                                            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                                        >
+                                            <X className="h-4 w-4" />
+                                            <span className="sr-only">Remove file</span>
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span>{formatFileSize(file.size)}</span>
+                                    <span>•</span>
+                                    <span>{estimateProcessingTime(file.size)}</span>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     <DialogFooter>
-                        <Button type="submit" disabled={!file || isLoading}>
+                        <Button
+                            type="submit"
+                            className="w-full sm:w-auto"
+                            disabled={!file || isLoading}
+                        >
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isLoading ? "Processing..." : "Upload & Process"}
                         </Button>
