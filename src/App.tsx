@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TopBar } from "@/components/TopBar"
+import { OnboardingWizard } from "@/components/OnboardingWizard"
 
 function App() {
   const { setStatus, setIdle, lastApiCall, isIdle } = useServerStore()
@@ -68,6 +69,7 @@ function App() {
         <TooltipProvider>
           <JobsPage />
         </TooltipProvider>
+        <OnboardingWizard />
         <Toaster />
       </ThemeProvider>
     </div>
