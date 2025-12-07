@@ -4,6 +4,8 @@ import { useServerStore } from "@/stores/useServerStore"
 import { checkHealth } from "@/lib/api"
 import { useEffect } from "react"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
+import { TopBar } from "@/components/TopBar"
 
 function App() {
   const { setStatus, setIdle, lastApiCall, isIdle } = useServerStore()
@@ -61,10 +63,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
-      <TooltipProvider>
-        <JobsPage />
-      </TooltipProvider>
-      <Toaster />
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <TopBar />
+        <TooltipProvider>
+          <JobsPage />
+        </TooltipProvider>
+        <Toaster />
+      </ThemeProvider>
     </div>
   )
 }

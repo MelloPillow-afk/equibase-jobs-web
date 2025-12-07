@@ -3,7 +3,7 @@ import { useJobs } from "@/hooks/useJobs"
 import { useJobSubscription } from "@/hooks/useJobSubscription"
 import { JobsTable } from "@/components/JobsTable"
 import { Pagination } from "@/components/Pagination"
-import { ServerStatusBadge } from "@/components/ServerStatusBadge"
+import { ServerStatusBadge } from "./ServerStatusBadge"
 import { CreateJobModal } from "@/components/CreateJobModal"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -40,7 +40,9 @@ export function JobsPage() {
         <div className="container mx-auto py-10 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <ServerStatusBadge className="mb-4" />
+                    <div className="flex items-center gap-4 mb-4">
+                        <ServerStatusBadge />
+                    </div>
                     <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">🏇 Equibase PDF Processor</h1>
                     <p className="text-muted-foreground mt-2 max-w-2xl text-lg">
                         Upload PDFs to extract data and convert them to CSV format.
