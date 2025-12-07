@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react"
+import { render, screen, fireEvent, within } from "@testing-library/react"
 import { JobsTable } from "./JobsTable"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Job } from "@/types/job"
