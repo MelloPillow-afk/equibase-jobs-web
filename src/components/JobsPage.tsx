@@ -41,7 +41,7 @@ export function JobsPage() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <ServerStatusBadge className="mb-4" />
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">PDF Processing Jobs</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">🏇 Equibase PDF Processor</h1>
                     <p className="text-muted-foreground mt-2 max-w-2xl text-lg">
                         Upload PDFs to extract data and convert them to CSV format.
                     </p>
