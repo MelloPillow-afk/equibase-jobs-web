@@ -3,20 +3,31 @@ import config from '@/config'
 import { useServerStore } from '@/stores/useServerStore'
 import { toast } from 'sonner'
 
+import { supabase } from '@/lib/supabase'
+
 /**
- * Generic fetch wrapper with error handling
+ * Generic fetch wrapper with error handling and auth
  */
 async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const { timeout = config.api.timeout, ...fetchOptions } = options as RequestInit & { timeout?: number }
+
+    // Always attempt to get the session.
+    // If not logged in, session is null and no token is attached.
+    // If logged in, token is attached.
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+
+    const getHeaders = (token: string | null | undefined) => ({
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...fetchOptions.headers,
+    })
 
     const controller = new AbortController()
     const id = setTimeout(() => controller.abort(), timeout)
 
     const requestConfig: RequestInit = {
-        headers: {
-            'Content-Type': 'application/json',
-            ...fetchOptions.headers,
-        },
+        headers: getHeaders(accessToken),
         signal: controller.signal,
         ...fetchOptions,
     }
@@ -25,7 +36,27 @@ async function fetchClient<T>(endpoint: string, options: RequestInit = {}): Prom
         // Reset idle timer on every request
         useServerStore.getState().updateLastApiCall()
 
-        const response = await fetch(`${config.api.baseUrl}${endpoint}`, requestConfig)
+        let response = await fetch(`${config.api.baseUrl}${endpoint}`, requestConfig)
+
+        // Handle 401 Unauthorized - Generic Retry logic
+        if (response.status === 401) {
+            console.warn("401 Unauthorized, attempting to refresh session...")
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+
+            if (!refreshError && refreshData.session) {
+                console.log("Session refreshed, retrying request...")
+                // Retry with new token
+                const newHeaders = getHeaders(refreshData.session.access_token)
+                response = await fetch(`${config.api.baseUrl}${endpoint}`, {
+                    ...requestConfig,
+                    headers: newHeaders
+                })
+            } else {
+                console.error("Failed to refresh session or no session:", refreshError)
+                // Let it fall through to the error handler logic below
+            }
+        }
+
         clearTimeout(id)
 
         if (!response.ok) {

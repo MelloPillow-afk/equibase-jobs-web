@@ -7,9 +7,30 @@ import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TopBar } from "@/components/TopBar"
 import { OnboardingWizard } from "@/components/OnboardingWizard"
+import { AuthModal } from "@/components/AuthModal"
+import { useAuthStore } from "@/stores/useAuthStore"
+import { supabase } from "@/lib/supabase"
 
 function App() {
   const { setStatus, setIdle, lastApiCall, isIdle } = useServerStore()
+  const { setSession } = useAuthStore()
+
+  // Auth Initialization
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    // Listen for changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [setSession])
 
   // Initial Health Check & Polling
   useEffect(() => {
@@ -70,6 +91,7 @@ function App() {
           <JobsPage />
         </TooltipProvider>
         <OnboardingWizard />
+        <AuthModal />
         <Toaster />
       </ThemeProvider>
     </div>

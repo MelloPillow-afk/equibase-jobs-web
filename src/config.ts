@@ -17,7 +17,7 @@ interface Config {
     }
 }
 
-const env = import.meta.env.MODE
+const env = import.meta.env.ENVIRONMENT
 const isProduction = env === 'production'
 const isDevelopment = env === 'development'
 
